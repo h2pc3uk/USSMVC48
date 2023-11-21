@@ -1,0 +1,188 @@
+﻿@model List<USSMVC48.Models.Question>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int responseIndex = 0;
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("SubmitForm", "FormMVC", FormMethod.Post, new { onsubmit = "return validateForm();" }))
+{
+    <input type="hidden" name="FormID" value="@ViewBag.FormID" />
+
+    for(int i = 0; i < Model.Count; i++)
+    {
+<div id="question_@Model[i].QuestionID" class="question">
+    <span>@Model[i].QuestionID</span>
+    <span>@Model[i].Text</span>
+    <input type="hidden" name="@($"Questions[{i}].QuestionId")" value="@Model[i].QuestionID" />
+
+    @if (Model[i].Options.Any(o => o.Type == "select"))
+    {
+        <div>
+            <select name="@($"Questions[{i}].SelectedOptionId")">
+                @foreach (var option in Model[i].Options.Where(o => o.Type == "select"))
+                {
+                    <option value="@option.OptionID">@option.Text</option>
+                }
+            </select>
+        </div>
+    }
+    else
+    {
+        foreach (var option in Model[i].Options)
+        {
+            if (Model[i].IsMultipleChoice)
+            {
+                <div>
+                    <input type="checkbox" name="@($"Questions[{i}].SelectedOptionId")" value="@option.OptionID" /> @option.Text
+                </div>
+            }
+            else if (option.Type == "radio")
+            {
+                <div>
+                    <input 
+                           type="radio" 
+                           name="@($"Questions[{i}].SelectedOptionId")" 
+                           value="@option.OptionID" 
+                           data-skip-to="@option.SkipToQuestionID"
+                           onchange="handleSkip(this)"/> @option.Text
+                </div>
+            }
+            else if (option.Type == "text")
+            {
+                <div>
+                    <label>@option.Text</label>
+                    <input type="text" name="@($"Questions[{i}].AdditionalText")" />
+                </div>
+            }
+        }
+    }
+
+</div>
+    }
+
+    <input type="submit" value="Submit" class="" />
+}
+
+<script>
+
+    //function validateForm() {
+    //    let unfilledQuestions = [];
+    //    let questions = document.querySelectorAll('.question');
+
+    //    questions.forEach(function (question) {
+    //        // Skip validation for disabled questions
+    //        if (!question.querySelector('input, select, textarea').disabled) {
+    //            let questionID = question.id.split('_')[1];
+    //            let inputs = question.querySelectorAll('input[type="checkbox"], input[type="radio"], input[type="text"], select');
+    //            let filled = Array.from(inputs).some(input => {
+    //                return (input.type === 'checkbox' || input.type === 'radio') ? input.checked : input.value.trim() !== '';
+    //            });
+
+    //            if (!filled) {
+    //                unfilledQuestions.push(questionID);
+    //            }
+    //        }
+    //    });
+
+    //    if (unfilledQuestions.length > 0) {
+    //        alert("Please fill in the following questions: " + unfilledQuestions.join(", "));
+    //        return false;
+    //    }
+
+    //    return true;
+    //}
+
+    function validateForm() {
+        let unfilledQuestions = [];
+        let questions = document.querySelectorAll('.question');
+
+        questions.forEach(function (question) {
+            // Only validate questions that are not skipped
+            if (!skippedQuestions[question.id.split('_')[1]]) {
+                let inputs = question.querySelectorAll('input[type="checkbox"], input[type="radio"], input[type="text"], select');
+                let filled = Array.from(inputs).some(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        return input.checked;
+                    } else {
+                        return input.value.trim() !== '';
+                    }
+                });
+
+                if (!filled) {
+                    unfilledQuestions.push(question.id.split('_')[1]);
+                }
+            }
+        });
+
+        if (unfilledQuestions.length > 0) {
+            alert("Please fill in the following questions: " + unfilledQuestions.join(", "));
+            return false;
+        }
+
+        return true;
+    }
+
+
+    let skippedQuestions = {};
+
+    function handleSkip(selectedOption) {
+        let skipToQuestionID = selectedOption.getAttribute('data-skip-to')
+            ? parseInt(selectedOption.getAttribute('data-skip-to'))
+            : null;
+        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
+
+        document.querySelectorAll('.question').forEach(question => {
+            let questionID = parseInt(question.id.split('_')[1]);
+
+            if (skipToQuestionID && questionID === skipToQuestionID) {
+                // If we've reached the question to skip to, disable all in between
+                for (let i = selectedQuestionID + 1; i < skipToQuestionID; i++) {
+                    skippedQuestions[i] = true;
+                    let questionToDisable = document.getElementById('question_' + i);
+                    disableInputs(questionToDisable);
+                }
+            } else {
+                // Enable the question if it's not in the range to skip
+                if (questionID !== selectedQuestionID && !skippedQuestions[questionID]) {
+                    enableInputs(question);
+                }
+            }
+        });
+
+        console.log("Skipped questions:", skippedQuestions);
+    }
+
+    function disableInputs(questionDiv) {
+        var inputs = questionDiv.querySelectorAll('input, select, textarea');
+        inputs.forEach(function (input) {
+            input.disabled = true;
+        });
+    }
+
+    function enableInputs(questionDiv) {
+        var inputs = questionDiv.querySelectorAll('input, select, textarea');
+        inputs.forEach(function (input) {
+            input.disabled = false;
+        });
+    }
+
+    function logFormData() {
+        let formData = new FormData(document.querySelector('form'));
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+    }
+
+    document.querySelector('form').addEventListener('submit', logFormData);
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('.question').forEach(question => {
+            let questionID = parseInt(question.id.split('_')[1]);
+            skippedQuestions[questionID] = false;
+        });
+    });
+
+</script>

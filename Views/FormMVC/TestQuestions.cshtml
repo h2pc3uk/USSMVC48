@@ -1,0 +1,18 @@
+﻿@model List<USSMVC48.Models.Question>
+
+@{
+    Layout = null;
+}
+
+<h2>Test Questions</h2>
+
+@foreach (var question in Model)
+{
+    <div>
+        <h4>@question.Text</h4>
+        @foreach (var option in question.Options)
+        {
+            <p>@option.Text</p>
+        }
+    </div>
+}
