@@ -19,54 +19,54 @@
 
     for(int i = 0; i < Model.Count; i++)
     {
-<div id="question_@Model[i].QuestionID" class="question">
-    <span>@Model[i].QuestionID</span>
-    <span>@Model[i].Text</span>
-    <input type="hidden" name="@($"Questions[{i}].QuestionId")" value="@Model[i].QuestionID" />
+        <div id="question_@Model[i].QuestionID" class="question pt-2">
+            <span>@Model[i].QuestionID</span>
+            <span>@Model[i].Text</span>
+            <input type="hidden" name="@($"Questions[{i}].QuestionId")" value="@Model[i].QuestionID" />
 
-    @if (Model[i].Options.Any(o => o.Type == "select"))
-    {
-        <div>
-            <select name="@($"Questions[{i}].SelectedOptionId")">
-                <option value="" selected>--- 請選擇 ---</option>
-                @foreach (var option in Model[i].Options.Where(o => o.Type == "select"))
-                {
-                    <option value="@option.OptionID">@option.Text</option>
-                }
-            </select>
-        </div>
-    }
-    else
-    {
-        foreach (var option in Model[i].Options)
-        {
-            if (Model[i].IsMultipleChoice)
+            @if (Model[i].Options.Any(o => o.Type == "select"))
             {
                 <div>
-                    <input type="checkbox" name="@($"Questions[{i}].SelectedOptionId")" value="@option.OptionID" /> @option.Text
+                    <select name="@($"Questions[{i}].SelectedOptionId")">
+                        <option value="" selected>--- 請選擇 ---</option>
+                        @foreach (var option in Model[i].Options.Where(o => o.Type == "select"))
+                        {
+                            <option value="@option.OptionID">@option.Text</option>
+                        }
+                    </select>
                 </div>
             }
-            else if (option.Type == "radio")
+            else
             {
-                <div>
-                    <input type="radio"
-                           name="@($"Questions[{i}].SelectedOptionId")"
-                           value="@option.OptionID"
-                           data-skip-to="@option.SkipToQuestionID"
-                           onchange="handleSkip(this)" /> @option.Text
-                    </div>
-                }
-                else if (option.Type == "text")
+                foreach (var option in Model[i].Options)
                 {
-                    <div>
-                        <label>@option.Text</label>
-                        <input type="text" name="@($"Questions[{i}].AdditionalText")" />
-                    </div>
+                    if (Model[i].IsMultipleChoice)
+                    {
+                        <div>
+                            <input type="checkbox" name="@($"Questions[{i}].SelectedOptionId")" value="@option.OptionID" /> @option.Text
+                        </div>
+                    }
+                    else if (option.Type == "radio")
+                    {
+                        <div>
+                            <input type="radio"
+                                   name="@($"Questions[{i}].SelectedOptionId")"
+                                   value="@option.OptionID"
+                                   data-skip-to="@option.SkipToQuestionID"
+                                   onchange="handleSkip(this)" /> @option.Text
+                        </div>
+                    }
+                    else if (option.Type == "text")
+                    {
+                        <div>
+                            <label>@option.Text</label>
+                            <input type="text" name="@($"Questions[{i}].AdditionalText")" />
+                        </div>       
+                    }
                 }
             }
-        }
 
-</div>
+        </div>
     }
 
     <input type="submit" value="送出" class="" />
@@ -108,71 +108,79 @@
     let skippedQuestions = {};
 
     function handleSkip(selectedOption) {
+        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
         let skipToQuestionID = selectedOption.getAttribute('data-skip-to')
             ? parseInt(selectedOption.getAttribute('data-skip-to'))
             : null;
-        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
 
-        document.querySelectorAll('.question').forEach(question => {
-            let questionID = parseInt(question.id.split('_')[1]);
+        // Reset skipped questions only if the action is taken on the same question that caused them to skip.
+        resetSkippedQuestions(selectedQuestionID);
 
-            // Skip disabling for Questions 1 and 11
-            if (questionID === 1 || questionID === 11) {
-                skippedQuestions[questionID] = false;
-                enableInputs(question);
-            } else if (skipToQuestionID != null && questionID > selectedQuestionID && questionID < skipToQuestionID) {
-                // Disable questions between the selected question and the skip-to question
-                skippedQuestions[questionID] = true;
-                disableInputs(question);
-            } else if (!skippedQuestions[questionID]) {
-                // Enable questions that are not meant to be skipped and are not Questions 1 or 11
-                enableInputs(question);
-            }
-        });
-
-        console.log("Skipped questions:", skippedQuestions);
+        // Then, apply the skipping logic to disable relevant questions
+        applySkipLogic(selectedQuestionID, skipToQuestionID);
     }
 
-    function handleSkip(selectedOption) {
-        let skipToQuestionID = selectedOption.getAttribute('data-skip-to')
-            ? parseInt(selectedOption.getAttribute('data-skip-to'))
-            : null;
-        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
-
-        document.querySelectorAll('.question').forEach(question => {
-            let questionID = parseInt(question.id.split('_')[1]);
-
-            if (skipToQuestionID && questionID === skipToQuestionID) {
-                // If we've reached the question to skip to, disable all in between
-                for (let i = selectedQuestionID + 1; i < skipToQuestionID; i++) {
-                    skippedQuestions[i] = true;
-                    let questionToDisable = document.getElementById('question_' + i);
-                    disableInputs(questionToDisable);
-                }
-            } else {
-                // Enable the question if it's not in the range to skip
-                if (questionID !== selectedQuestionID && !skippedQuestions[questionID]) {
-                    enableInputs(question);
-                }
+    function resetSkippedQuestions(currentID) {
+        // Re-enable questions only if they were skipped due to interaction with the current question.
+        Object.keys(skippedQuestions).forEach(key => {
+            let questionID = parseInt(key);
+            // If there is no skipToID, it means we are not skipping any questions, so re-enable them.
+            // If questionID is greater than currentID and less than skipToID, it was skipped by the current question.
+            if (skippedQuestions[questionID] === currentID) {
+                skippedQuestions[questionID] = false;
+                enableInputs(document.getElementById('question_' + questionID));
             }
         });
+    }
 
-        console.log("Skipped questions:", skippedQuestions);
+    function applySkipLogic(currentID) {
+        // If there's a skip-to question, disable all questions up to it.
+        if (skipToID !== null) {
+            for (let i = currentID + 1; i < skipToQuestionID; i++) {
+                skippedQuestions[i] = true;
+                disableInputs(document.getElementById('question_' + i));
+            }
+        }
+    }
+
+
+    function applySkipLogic(currentID, skipToID) {
+        if (skipToID !== null) {
+            for (let i = currentID + 1; i < skipToID; i++) {
+                skippedQuestions[i] = true;
+                disableInputs(document.getElementById('question_' + i));
+            }
+        }
     }
 
     function disableInputs(questionDiv) {
-        var inputs = questionDiv.querySelectorAll('input, select, textarea');
-        inputs.forEach(function (input) {
-            input.disabled = true;
-        });
+        if (questionDiv && !questionDiv.classList.contains('current')) {
+            var inputs = questionDiv.querySelectorAll('input, select, textarea');
+            inputs.forEach(function (input) {
+                input.disabled = true;
+            });
+        }
     }
 
     function enableInputs(questionDiv) {
-        var inputs = questionDiv.querySelectorAll('input, select, textarea');
-        inputs.forEach(function (input) {
-            input.disabled = false;
-        });
+        if (questionDiv) {
+            var inputs = questionDiv.querySelectorAll('input, select, textarea');
+            inputs.forEach(function (input) {
+                input.disabled = false;
+            });
+        }
     }
+
+    // Ensure the current question is marked to avoid being disabled
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('.question').forEach(question => {
+            let questionID = parseInt(question.id.split('_')[1]);
+            skippedQuestions[questionID] = false;
+            if (questionID === 1) { // Assuming question 1 is the one that shouldn't be disabled
+                question.classList.add('current');
+            }
+        });
+    });
 
     function logFormData() {
         let formData = new FormData(document.querySelector('form'));

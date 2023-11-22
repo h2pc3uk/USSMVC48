@@ -21,26 +21,20 @@ namespace USSMVC48.Controllers
         // GET: FormMVC
         public ActionResult Index()
         {
+            
             return View();
         }
 
-        [Route("FormMVC/showForm/{id:int}")]
-        public ActionResult ShowForm(int? id)
+        //[Route("FormMVC/showForm/{id:int}")]
+        [Route("FormMVC/showForm")]
+        public ActionResult ShowForm()
         {
+            int id = 1;
+
             System.Diagnostics.Debug.WriteLine($"formId: {id}");
-            if (!id.HasValue) 
-            {
-                return Content("No FormID provided");
-            }
+            var questions = _formService.GetQuestionsWithOptionsByFormId(id);
 
-            var questions = _formService.GetQuestionsWithOptionsByFormId(id.Value);
-            
-            if(questions == null || !questions.Any())
-            {
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.FormID = id.Value;
+            ViewBag.FormID = id;
 
             return View(questions);
         }
