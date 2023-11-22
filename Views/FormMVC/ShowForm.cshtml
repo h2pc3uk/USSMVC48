@@ -6,6 +6,12 @@
 }
 
 <h2>@ViewBag.Title</h2>
+<h2>全國農業金庫112年度顧客滿意度問卷調查表</h2>
+<p>
+    親愛的顧客 您好：<br />
+    感謝您的支持與愛護，誠摯邀請您填寫顧客滿意度問卷，填答時間只需要3分鐘，您的寶貴意見將是我們持續進步的動力，感謝您的回饋。<br />
+    「本問卷僅作為市場分析和提高服務水準之用，分析和提高服務水準之用，個別資料將會嚴格保密」。
+</p>
 
 @using (Html.BeginForm("SubmitForm", "FormMVC", FormMethod.Post, new { onsubmit = "return validateForm();" }))
 {
@@ -22,6 +28,7 @@
     {
         <div>
             <select name="@($"Questions[{i}].SelectedOptionId")">
+                <option value="" selected>--- 請選擇 ---</option>
                 @foreach (var option in Model[i].Options.Where(o => o.Type == "select"))
                 {
                     <option value="@option.OptionID">@option.Text</option>
@@ -42,58 +49,30 @@
             else if (option.Type == "radio")
             {
                 <div>
-                    <input 
-                           type="radio" 
-                           name="@($"Questions[{i}].SelectedOptionId")" 
-                           value="@option.OptionID" 
+                    <input type="radio"
+                           name="@($"Questions[{i}].SelectedOptionId")"
+                           value="@option.OptionID"
                            data-skip-to="@option.SkipToQuestionID"
-                           onchange="handleSkip(this)"/> @option.Text
-                </div>
-            }
-            else if (option.Type == "text")
-            {
-                <div>
-                    <label>@option.Text</label>
-                    <input type="text" name="@($"Questions[{i}].AdditionalText")" />
-                </div>
+                           onchange="handleSkip(this)" /> @option.Text
+                    </div>
+                }
+                else if (option.Type == "text")
+                {
+                    <div>
+                        <label>@option.Text</label>
+                        <input type="text" name="@($"Questions[{i}].AdditionalText")" />
+                    </div>
+                }
             }
         }
-    }
 
 </div>
     }
 
-    <input type="submit" value="Submit" class="" />
+    <input type="submit" value="送出" class="" />
 }
 
 <script>
-
-    //function validateForm() {
-    //    let unfilledQuestions = [];
-    //    let questions = document.querySelectorAll('.question');
-
-    //    questions.forEach(function (question) {
-    //        // Skip validation for disabled questions
-    //        if (!question.querySelector('input, select, textarea').disabled) {
-    //            let questionID = question.id.split('_')[1];
-    //            let inputs = question.querySelectorAll('input[type="checkbox"], input[type="radio"], input[type="text"], select');
-    //            let filled = Array.from(inputs).some(input => {
-    //                return (input.type === 'checkbox' || input.type === 'radio') ? input.checked : input.value.trim() !== '';
-    //            });
-
-    //            if (!filled) {
-    //                unfilledQuestions.push(questionID);
-    //            }
-    //        }
-    //    });
-
-    //    if (unfilledQuestions.length > 0) {
-    //        alert("Please fill in the following questions: " + unfilledQuestions.join(", "));
-    //        return false;
-    //    }
-
-    //    return true;
-    //}
 
     function validateForm() {
         let unfilledQuestions = [];
@@ -127,6 +106,32 @@
 
 
     let skippedQuestions = {};
+
+    function handleSkip(selectedOption) {
+        let skipToQuestionID = selectedOption.getAttribute('data-skip-to')
+            ? parseInt(selectedOption.getAttribute('data-skip-to'))
+            : null;
+        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
+
+        document.querySelectorAll('.question').forEach(question => {
+            let questionID = parseInt(question.id.split('_')[1]);
+
+            // Skip disabling for Questions 1 and 11
+            if (questionID === 1 || questionID === 11) {
+                skippedQuestions[questionID] = false;
+                enableInputs(question);
+            } else if (skipToQuestionID != null && questionID > selectedQuestionID && questionID < skipToQuestionID) {
+                // Disable questions between the selected question and the skip-to question
+                skippedQuestions[questionID] = true;
+                disableInputs(question);
+            } else if (!skippedQuestions[questionID]) {
+                // Enable questions that are not meant to be skipped and are not Questions 1 or 11
+                enableInputs(question);
+            }
+        });
+
+        console.log("Skipped questions:", skippedQuestions);
+    }
 
     function handleSkip(selectedOption) {
         let skipToQuestionID = selectedOption.getAttribute('data-skip-to')

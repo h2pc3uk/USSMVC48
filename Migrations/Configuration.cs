@@ -1232,6 +1232,142 @@
                 },
             };
 
+            var optionForQuestion23 = new List<Option>
+            {
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "基隆市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "新北市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "台北市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "桃園市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "臺中市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "臺南市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "高雄市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "新竹縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "新竹市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "苗栗縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "嘉義市",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "彰化縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "南投縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "雲林縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "嘉義縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "屏東縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "宜蘭縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "花蓮縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "臺東縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "澎湖縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "金門縣",
+                    Type = "select"
+                },
+                new Option
+                {
+                    QuestionID = question23.QuestionID,
+                    Text = "連江縣",
+                    Type = "select"
+                },
+            };
+
             var optionForQuestion24 = new List<Option>
             {
                 new Option
