@@ -168,6 +168,10 @@
     <Compile Include="Migrations\202311191257231_InitialCreate.designer.cs">
       <DependentUpon>202311191257231_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202311230929207_AddCreatedTimeToResponse.cs" />
+    <Compile Include="Migrations\202311230929207_AddCreatedTimeToResponse.designer.cs">
+      <DependentUpon>202311230929207_AddCreatedTimeToResponse.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Form.cs" />
     <Compile Include="Models\FormViewModel.cs" />
@@ -269,6 +273,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202311191257231_InitialCreate.resx">
       <DependentUpon>202311191257231_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202311230929207_AddCreatedTimeToResponse.resx">
+      <DependentUpon>202311230929207_AddCreatedTimeToResponse.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

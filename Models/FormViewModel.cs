@@ -29,7 +29,8 @@ namespace USSMVC48.Models
                         SurveySessionID = surveySessionId,
                         QuestionID = question.QuestionId,
                         OptionID = question.SelectedOptionId,
-                        AdditionalText = question.AdditionalText
+                        AdditionalText = question.AdditionalText,
+                        CreatedTime = DateTime.Now
                     };
 
                     // Optional: Add further validation or processing here

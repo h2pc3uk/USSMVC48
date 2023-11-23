@@ -12,6 +12,7 @@ namespace USSMVC48.Models
         public int QuestionID { get; set; }
         public int? OptionID { get; set; }
         public string AdditionalText { get; set; }
+        public DateTime CreatedTime { get; set; }
         public virtual Question Question { get; set; }
         public virtual Option Option { get; set; }
     }
