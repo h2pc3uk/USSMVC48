@@ -13,6 +13,13 @@ namespace USSMVC48
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Define a custom route
+            routes.MapRoute(
+                name: "FormShow",
+                url: "ShowForm",
+                defaults: new { controller = "FormMVC", action = "ShowForm" }
+            );
+
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
