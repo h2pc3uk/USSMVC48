@@ -40,10 +40,16 @@ namespace USSMVC48.Controllers
         }
 
         [HttpPost]
-        public JsonResult SubmitForm(FormViewModel formData)
+        public ActionResult SubmitForm(FormViewModel formData)
         {
-            
-            if(formData == null)
+            // Log formData for debugging
+            System.Diagnostics.Debug.WriteLine("Received form data: ");
+            foreach (var question in formData.Questions)
+            {
+                System.Diagnostics.Debug.WriteLine($"Question ID: {question.QuestionId}, Text: {question.AdditionalText}");
+            }
+
+            if (formData == null)
             {
                 return Json(new { success = false, message = "Form data is null." }, JsonRequestBehavior.AllowGet);
             }
@@ -61,17 +67,11 @@ namespace USSMVC48.Controllers
 
             var validationResult = _formService.ValidateResponses(responses, formData.FormId);
 
-            //if (!validationResult.IsValid)
-            //{
-            //    string message = "Please correct the errors. Missing responses for questions: " + String.Join(", ", validationResult.MissingQuestionIds);
-
-            //    return Json(new { success = false, message = "Please correct the errors.", missingQuestionIds = validationResult.MissingQuestionIds });
-            //}
-
             _formService.SubmitResponse(responses, surveySessionId);
 
-            // Redirect to a confirmation page or display a success message
-            return Json(new { success = true, message = "Responses submitted successfully" }, JsonRequestBehavior.AllowGet);
+            TempData["SuccessMessage"] = "表單已成功傳送";
+
+            return RedirectToAction("ShowForm");
         }
 
         public ActionResult DatabaseTest()

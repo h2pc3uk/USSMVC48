@@ -5,6 +5,21 @@
     int responseIndex = 0;
 }
 
+@{
+    if (TempData["SuccessMessage"] != null)
+    {
+        <script type="text/javascript">
+            alert('@TempData["SuccessMessage"].ToString()');
+        </script>
+    }
+}
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
 <h2>@ViewBag.Title</h2>
 <h2>全國農業金庫112年度顧客滿意度問卷調查表</h2>
 <p>
@@ -17,7 +32,7 @@
 {
     <input type="hidden" name="FormID" value="@ViewBag.FormID" />
 
-    for(int i = 0; i < Model.Count; i++)
+    for (int i = 0; i < Model.Count; i++)
     {
         <div id="question_@Model[i].QuestionID" class="question pt-2">
             <span>@Model[i].QuestionID</span>
@@ -61,7 +76,7 @@
                         <div>
                             <label>@option.Text</label>
                             <input type="text" name="@($"Questions[{i}].AdditionalText")" />
-                        </div>       
+                        </div>
                     }
                 }
             }
@@ -80,7 +95,7 @@
 
         questions.forEach(function (question) {
             // Only validate questions that are not skipped
-            if (!skippedQuestions[question.id.split('_')[1]]) {
+            if (!question.classList.contains('hidden')) {
                 let inputs = question.querySelectorAll('input[type="checkbox"], input[type="radio"], input[type="text"], select');
                 let filled = Array.from(inputs).some(input => {
                     if (input.type === 'checkbox' || input.type === 'radio') {
@@ -105,20 +120,22 @@
     }
 
 
-    let skippedQuestions = {};
+    let questionDependencies = {}; // Maps each question to the ID of the question it should skip to
+    let skippedQuestions = {}; // Tracks the state of each question
 
     function handleSkip(selectedOption) {
-        let selectedQuestionID = parseInt(selectedOption.name.match(/\[(\d+)\]/)[1]);
+        let match = selectedOption.name.match(/\[(\d+)\]/);
+        let selectedQuestionID = match ? parseInt(match[1]) : null;
         let skipToQuestionID = selectedOption.getAttribute('data-skip-to')
             ? parseInt(selectedOption.getAttribute('data-skip-to'))
             : null;
 
-        // Reset skipped questions only if the action is taken on the same question that caused them to skip.
-        resetSkippedQuestions(selectedQuestionID);
+        // Update the dependencies based on the current selection
+        questionDependencies[selectedQuestionID] = skipToQuestionID;
 
-        // Then, apply the skipping logic to disable relevant questions
-        applySkipLogic(selectedQuestionID, skipToQuestionID);
+        applySkipLogic();
     }
+
 
     function resetSkippedQuestions(currentID) {
         // Re-enable questions only if they were skipped due to interaction with the current question.
@@ -128,29 +145,63 @@
             // If questionID is greater than currentID and less than skipToID, it was skipped by the current question.
             if (skippedQuestions[questionID] === currentID) {
                 skippedQuestions[questionID] = false;
-                enableInputs(document.getElementById('question_' + questionID));
+                showQuestion(document.getElementById('question_' + questionID));
             }
         });
     }
 
-    function applySkipLogic(currentID) {
-        // If there's a skip-to question, disable all questions up to it.
-        if (skipToID !== null) {
-            for (let i = currentID + 1; i < skipToQuestionID; i++) {
-                skippedQuestions[i] = true;
-                disableInputs(document.getElementById('question_' + i));
-            }
+    function hideQuestion(questionDiv) {
+        if (questionDiv) {
+            questionDiv.classList.add('hidden');
         }
     }
 
+    function showQuestion(questionDiv) {
+        if (questionDiv) {
+            questionDiv.classList.remove('hidden');
+        }
+    }
 
-    function applySkipLogic(currentID, skipToID) {
-        if (skipToID !== null) {
-            for (let i = currentID + 1; i < skipToID; i++) {
-                skippedQuestions[i] = true;
-                disableInputs(document.getElementById('question_' + i));
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+            handleSkip(input);
+        });
+
+        document.querySelectorAll('.question').forEach(question => {
+            let questionID = parseInt(question.id.split('_')[1]);
+            skippedQuestions[questionID] = false;
+        });
+    });
+
+    function applySkipLogic() {
+        // Initialize all questions as potentially visible
+        for (let i = 1; i <= Object.keys(skippedQuestions).length; i++) {
+            skippedQuestions[i] = false;
+        }
+
+        // Apply hide logic based on current dependencies
+        for (let questionID in questionDependencies) {
+            let skipToID = questionDependencies[questionID];
+            if (skipToID) {
+                for (let i = parseInt(questionID) + 1; i < skipToID; i++) {
+                    skippedQuestions[i] = true;
+                }
             }
         }
+
+        // Update the visibility of each question
+        for (let questionID in skippedQuestions) {
+            let questionDiv = document.getElementById('question_' + questionID);
+            if (skippedQuestions[questionID]) {
+                hideQuestion(questionDiv);
+            } else {
+                showQuestion(questionDiv);
+            }
+        }
+
+        // Ensure question 1 is always visible
+        showQuestion(document.getElementById('question_1'));
+        showQuestion(document.getElementById('question_11'));
     }
 
     function disableInputs(questionDiv) {
@@ -171,31 +222,10 @@
         }
     }
 
-    // Ensure the current question is marked to avoid being disabled
-    document.addEventListener('DOMContentLoaded', (event) => {
-        document.querySelectorAll('.question').forEach(question => {
-            let questionID = parseInt(question.id.split('_')[1]);
-            skippedQuestions[questionID] = false;
-            if (questionID === 1) { // Assuming question 1 is the one that shouldn't be disabled
-                question.classList.add('current');
-            }
-        });
-    });
-
     function logFormData() {
         let formData = new FormData(document.querySelector('form'));
         for (let [key, value] of formData.entries()) {
             console.log(key, value);
         }
     }
-
-    document.querySelector('form').addEventListener('submit', logFormData);
-
-    document.addEventListener('DOMContentLoaded', (event) => {
-        document.querySelectorAll('.question').forEach(question => {
-            let questionID = parseInt(question.id.split('_')[1]);
-            skippedQuestions[questionID] = false;
-        });
-    });
-
 </script>
