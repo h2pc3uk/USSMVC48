@@ -40,6 +40,7 @@ namespace USSMVC48.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult SubmitForm(FormViewModel formData)
         {
             // Log formData for debugging
