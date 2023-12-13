@@ -19,28 +19,42 @@ namespace USSMVC48.Models
         {
             var responses = new List<Response>();
 
-            if(Questions != null)
+            foreach (var question in Questions)
             {
-                foreach (var question in Questions)
+                if (question.SelectedOptionIds.Any())
                 {
-                    // Initialize a new Response object
-                    var response = new Response
+                    // Handle multiple choice questions
+                    foreach (var optionId in question.SelectedOptionIds)
                     {
-                        SurveySessionID = surveySessionId,
-                        QuestionID = question.QuestionId,
-                        OptionID = question.SelectedOptionId,
-                        AdditionalText = question.AdditionalText,
-                        CreatedTime = DateTime.Now
-                    };
-
-                    // Optional: Add further validation or processing here
-                    // For example, handling null or default values differently
-
-                    // Add the response to the list
-                    responses.Add(response);
+                        responses.Add(CreateResponse(surveySessionId, question.QuestionId, optionId, question.AdditionalText));
+                    }
+                }
+                else if (question.SelectedOptionId.HasValue)
+                {
+                    // Handle single choice question
+                    responses.Add(CreateResponse(surveySessionId, question.QuestionId, question.SelectedOptionId.Value, question.AdditionalText));
+                }
+                else
+                {
+                    // Handle text input question
+                    responses.Add(CreateResponse(surveySessionId, question.QuestionId, null, question.AdditionalText));
                 }
             }
+
             return responses;
         }
+
+        private Response CreateResponse(Guid surveySessionId, int questionId, int? optionId, string additionalText)
+        {
+            return new Response
+            {
+                SurveySessionID = surveySessionId,
+                QuestionID = questionId,
+                OptionID = optionId,
+                AdditionalText = additionalText,
+                CreatedTime = DateTime.Now
+            };
+        }
+
     }
 }

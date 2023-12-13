@@ -1,0 +1,57 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+<div id="question-container">
+
+</div>
+
+@section scripts {
+    <script>
+        function buildForm(questions) {
+            var questionContainer = $('#question-container');
+            questions.forEach(function (question, i) {
+                var questionDiv = $('<div></div>', {
+                    id: 'question_' + question.QuestionID,
+                    class: 'question pt-2'
+                });
+                questionDiv.append($('<span></span>').text(question.QuestionID));
+                questionDiv.append($('<span></span>').text(question.Text));
+
+                question.Options.forEach(function (option) {
+                    var input;
+                    if (option.Type === 'radio') {
+                        input = $('<input>', { type: 'radio', name: 'Questions[' + i + '].SelectedOptionId', value: option.OptionID });
+
+                    } else if (option.Type === 'checkbox') {
+                        input = $('<input>', { type: 'checkbox', name: 'Questions[' + i + '].SelectedOptionId', value: option.OptionID });
+                    } else if (option.Type === 'text') {
+                        input = $('<input>', { type: 'text', name: 'Questions[' + i + '].AdditionalText' });
+                    }
+
+                    var label = $('<label>').append(input).append(option.Text);
+                    questionDiv.append(label);
+                })
+
+                questionContainer.append(questionDiv);
+            })
+        }
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("ShowForm", "FormAPI")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    console.log(response);
+                    buildForm(response);
+                },
+                error: function () {
+                    alert("Error loading questions")
+                }
+            })
+        })
+    </script>
+}
