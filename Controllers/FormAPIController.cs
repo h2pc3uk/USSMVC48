@@ -10,10 +10,12 @@ using System.Data.Entity;
 using System.Web.Http;
 using System.Web.Http.Results;
 using USSMVC48.DTOs;
+using System.Web.Http.Cors;
 
 
 namespace USSMVC48.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class FormAPIController : ApiController
     {
         private readonly FormService _formService;

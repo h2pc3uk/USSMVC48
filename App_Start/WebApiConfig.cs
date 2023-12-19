@@ -25,9 +25,7 @@ namespace USSMVC48.App_Start
 
             config.Formatters.Remove(config.Formatters.XmlFormatter);
 
-            // Enable Cors
-            var cors = new EnableCorsAttribute("*", "*", "*");
-            config.EnableCors(cors);
+            config.EnableCors();
         }
     }
 }
